@@ -57,11 +57,12 @@ public class ClientHandler implements Runnable {
     }
 
     private void broadcast(String message) {
+        System.out.println("[" + LocalDateTime.now() + "] " + message);
+
         for (Socket clientSocket : clients.values()) {
             try {
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                 out.println(message);
-                System.out.println("[" + LocalDateTime.now() + "] " + message);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
