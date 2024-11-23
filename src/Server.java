@@ -10,7 +10,9 @@ public class Server {
         ServerSocket server = new ServerSocket(2201);
         System.out.println("Server running on port 2201");
 
-        while (true) {
+        boolean stopSignal = false;
+
+        while (!stopSignal) {
             try {
                 Socket clientSocket = server.accept();
                 System.out.println("Client connected");
@@ -25,6 +27,13 @@ public class Server {
                     if(message.equalsIgnoreCase("/sair")) {
                         out.println("Disconnecting...");
                         System.out.println("Client disconnected.");
+                        break;
+                    }
+
+                    if(message.equalsIgnoreCase("/stop")) {
+                        out.println("Stopping server...");
+                        System.out.println("Received stop signal");
+                        stopSignal = true;
                         break;
                     }
 
