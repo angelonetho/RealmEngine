@@ -37,7 +37,7 @@ public class ClientHandler implements Runnable {
             }
         } catch (IOException e) {
 
-            if (playerNickname != null) {
+            if (playerNickname != null && !socket.isClosed()) {
                 System.out.println("Connection error from " + playerNickname + ": " + e.getMessage());
             }
 
