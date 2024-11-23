@@ -7,17 +7,34 @@ import java.net.Socket;
 public class Client {
 
     public static void main(String[] args) throws IOException {
-        Socket socket = new Socket("localhost", 2201);
+       try {
+           Socket socket = new Socket("localhost", 2201);
+           System.out.println("Connected to " + socket.getRemoteSocketAddress());
 
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+           PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+           BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+           BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+           String input;
 
-        out.println("teste");
+           while(true) {
+               input = console.readLine();
 
-        String response = in.readLine();
-        System.out.println(response);
+               out.println(input);
 
-        socket.close();
+               if(input.equalsIgnoreCase("/sair")) {
+                   System.out.println("Closing connection...");
+                   break;
+               }
+
+               String response = in.readLine();
+               System.out.println("[Server]: " + response);
+           }
+
+           socket.close();
+           System.out.println("Connection closed");
+       } catch (IOException e) {
+           System.out.println("Error: " + e);
+       }
     }
 }
