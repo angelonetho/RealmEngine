@@ -24,14 +24,19 @@ public class Client {
             new Thread(() -> {
                 try {
                     String serverMessage;
+
                     while ((serverMessage = in.readLine()) != null) {
                         System.out.println(serverMessage);
                     }
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
                     System.exit(1);
+                } finally {
+                    System.out.println("❌ You have been disconnected by the server.");
+                    System.exit(1);
                 }
             }).start();
+
 
             String userMessage;
             while ((userMessage = console.readLine()) != null) {
@@ -39,7 +44,6 @@ public class Client {
             }
 
             socket.close();
-
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
 
