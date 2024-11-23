@@ -10,18 +10,31 @@ public class Server {
         ServerSocket server = new ServerSocket(2201);
         System.out.println("Server running on port 2201");
 
-        Socket clientSocket = server.accept();
-        System.out.println("Client connected");
+        while (true) {
+            try {
+                Socket clientSocket = server.accept();
+                System.out.println("Client connected");
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-        String message = in.readLine();
-        System.out.println("Client: " + message);
+                String message;
+                while((message = in.readLine()) != null) {
+                    System.out.println("Client: " + message);
 
-        out.println("Server received: " + message);
+                    if(message.equalsIgnoreCase("/sair")) {
+                        out.println("Disconnecting...");
+                        System.out.println("Client disconnected.");
+                        break;
+                    }
 
-        clientSocket.close();
-        server.close();
+                    out.println("Server received:" + message);
+                }
+
+                clientSocket.close();
+            } catch (IOException e) {
+                System.out.println("Error on client: " + e.getMessage());
+            }
+        }
     }
 }
