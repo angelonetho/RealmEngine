@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
 
 import static Server.Server.clients;
 
@@ -22,23 +23,31 @@ public class ClientHandler implements Runnable {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
         ) {
-            System.out.println("NEW PLAYER TRYING TO CONNECT");
+            System.out.println("NEW PLAYER IS TRYING TO CONNECT");
             out.println("Enter your nickname: ");
             playerNickname = in.readLine();
             clients.put(playerNickname, socket);
-            System.out.println("Player " + playerNickname + " has connected to the server.");
             broadcast("Player " + playerNickname + " has connected to the server.");
 
             String message;
             while ((message = in.readLine()) != null) {
-                System.out.println(playerNickname + ": " + message);
+
                 broadcast(playerNickname + ": " + message);
 
             }
         } catch (IOException e) {
-            System.out.println("Connection error from " + playerNickname + ": " + e.getMessage());
+
+            if (playerNickname != null) {
+                System.out.println("Connection error from " + playerNickname + ": " + e.getMessage());
+            }
+
         } finally {
-            clients.remove(playerNickname);
+
+            if (playerNickname != null) {
+                clients.remove(playerNickname);
+                broadcast(playerNickname + " has disconnected from the server.");
+            }
+
             try {
                 socket.close();
             } catch (IOException e) {
@@ -52,6 +61,7 @@ public class ClientHandler implements Runnable {
             try {
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                 out.println(message);
+                System.out.println("[" + LocalDateTime.now() + "] " + message);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
