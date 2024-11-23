@@ -16,8 +16,11 @@ public class Server {
             ServerSocket server = new ServerSocket(PORT);
             System.out.println("✅ Server is running...");
 
-            while (true) {
+            new Thread(new ServerHandler(server)).start();
+
+            while (!server.isClosed()) {
                 Socket clientSocket = server.accept();
+                clientSocket.setSoTimeout(600000);
                 new Thread(new ClientHandler(clientSocket)).start();
             }
 
