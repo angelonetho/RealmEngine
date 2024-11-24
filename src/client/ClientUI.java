@@ -67,7 +67,7 @@ public class ClientUI {
                 int x = e.getX();
                 int y = e.getY();
 
-                if (out != null) {
+                if (player.getName() != null && out != null) {
                     out.println("player_move " + player.getUuid() + " " + x + " " + y);
                     System.out.println("player_move " + player.getUuid() + " " + x + " " + y);
                 }
@@ -134,6 +134,12 @@ public class ClientUI {
     private void sendMessage() {
         String messageText = chatField.getText();
         if (messageText.trim().isEmpty()) return;
+
+        if (player.getName() == null) {
+            out.println("new_player " + messageText);
+            chatField.setText("");
+            return;
+        }
 
         out.println(messageText);
         chatField.setText("");
