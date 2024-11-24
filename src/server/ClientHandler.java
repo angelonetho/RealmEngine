@@ -31,7 +31,6 @@ public class ClientHandler implements Runnable {
 
             String message;
             while ((message = in.readLine()) != null && player == null) {
-                out.println("Enter your nickname: ");
                 if (message.startsWith("new_player")) {
                     String[] rawData = message.split(" ");
 
@@ -79,7 +78,7 @@ public class ClientHandler implements Runnable {
                     broadcast(message);
 
                 } else {
-                    broadcast("player_message " + player.getName() + ": " + message);
+                    broadcast("player_message " + player.getUuid() + " " + message);
                 }
 
 

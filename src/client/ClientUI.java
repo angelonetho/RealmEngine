@@ -1,5 +1,6 @@
 package client;
 
+import entities.ChatMessage;
 import entities.Player;
 
 import javax.swing.*;
@@ -21,11 +22,11 @@ public class ClientUI {
     private static final int HEIGHT = 768;
 
     private final HashMap<UUID, Player> playersMap = new HashMap<>();
+    private final HashMap<UUID, ChatMessage> chatMap = new HashMap<>();
 
     private Player player = new Player(null, 0, 0);
 
     private JFrame frame;
-    private JTextArea chatArea;
     private JTextField chatField;
     private JPanel gamePanel;
     private PrintWriter out;
@@ -35,13 +36,6 @@ public class ClientUI {
         frame.setSize(WIDTH, HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-
-        chatArea = new JTextArea();
-        chatArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(chatArea);
-        scrollPane.setPreferredSize(new Dimension(300, HEIGHT));
-
-        frame.add(scrollPane, BorderLayout.EAST);
 
         chatField = new JTextField();
         chatField.addActionListener(e -> sendMessage());
@@ -100,6 +94,22 @@ public class ClientUI {
 
             g.setColor(Color.BLACK);
             g.drawString(player.getName(), (int) player.getX() - textWidth / 2, (int) player.getY() + 50);
+
+
+            // Chat
+            if (chatMap.containsKey(player.getUuid())) {
+                ChatMessage chatMessage = chatMap.get(player.getUuid());
+
+                if (chatMessage.isExpired()) {
+                    chatMap.remove(player.getUuid());
+                    continue;
+                }
+
+                String content = chatMessage.getContent();
+
+                g.setColor(Color.RED);
+                g.drawString(content, (int) player.getX() - textWidth / 2, (int) player.getY() - 50);
+            }
         }
 
     }
@@ -131,21 +141,6 @@ public class ClientUI {
         }
     }
 
-    private void receiveChatMessage(String serverMessage) {
-
-        if (serverMessage.startsWith("player_message")) {
-
-            String finalServerMessage = serverMessage.replace("player_message", "");
-            
-            SwingUtilities.invokeLater(() -> {
-                chatArea.append(finalServerMessage + "\n");
-
-            });
-        }
-
-        System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
-    }
-
     private void sendMessage() {
         String messageText = chatField.getText();
         if (messageText.trim().isEmpty()) return;
@@ -162,7 +157,7 @@ public class ClientUI {
 
     public void startClient() {
 
-        PacketProcessor packetHandler = new PacketProcessor(player, playersMap);
+        PacketProcessor packetHandler = new PacketProcessor(player, playersMap, chatMap);
 
         try {
             Socket socket = new Socket("localhost", SERVER_PORT);
@@ -178,7 +173,7 @@ public class ClientUI {
                     while ((serverMessage = in.readLine()) != null) {
 
                         packetHandler.processMessage(serverMessage);
-                        receiveChatMessage(serverMessage);
+                        System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
 
                     }
                 } catch (IOException e) {

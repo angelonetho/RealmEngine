@@ -1,18 +1,22 @@
 package client;
 
+import entities.ChatMessage;
 import entities.Player;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
 public class PacketProcessor {
 
     private final HashMap<UUID, Player> playersMap;
+    private final HashMap<UUID, ChatMessage> chatMap;
     private final Player player;
 
-    public PacketProcessor(Player player, HashMap<UUID, Player> playersMap) {
+    public PacketProcessor(Player player, HashMap<UUID, Player> playersMap, HashMap<UUID, ChatMessage> chatMap) {
         this.player = player;
         this.playersMap = playersMap;
+        this.chatMap = chatMap;
     }
 
     public void processMessage(String message) {
@@ -44,6 +48,14 @@ public class PacketProcessor {
             case "PLAYER_DISCONNECT" -> {
                 UUID uuid = UUID.fromString(rawData[1]);
                 playersMap.remove(uuid);
+            }
+
+            case "PLAYER_MESSAGE" -> {
+                UUID uuid = UUID.fromString(rawData[1]);
+                String text = String.join(" ", Arrays.copyOfRange(rawData, 2, rawData.length));
+
+                ChatMessage chatMessage = new ChatMessage(uuid, text);
+                chatMap.put(uuid, chatMessage);
             }
         }
 
