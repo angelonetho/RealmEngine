@@ -27,17 +27,23 @@ public class ClientHandler implements Runnable {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
         ) {
             System.out.println("NEW PLAYER IS TRYING TO CONNECT");
-            out.println("Enter your nickname: ");
-            String playerNickname = in.readLine();
 
-            player = new Player(playerNickname, 0, 0);
-
-            clients.put(player, socket);
-            sendAccountData();
-            sendRoomData();
-            broadcast("Player " + player.getName() + " has connected to the server.");
 
             String message;
+            while ((message = in.readLine()) != null && player == null) {
+                if (message.startsWith("new_player")) {
+                    out.println("Enter your nickname: ");
+                    String playerNickname = in.readLine();
+
+                    player = new Player(playerNickname, 0, 0);
+
+                    clients.put(player, socket);
+                    sendAccountData();
+                    sendRoomData();
+                    broadcast("Player " + player.getName() + " has connected to the server.");
+                }
+            }
+            
             while ((message = in.readLine()) != null) {
 
                 if (message.startsWith("player_move")) {
