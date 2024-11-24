@@ -20,8 +20,11 @@ public class ClientUI {
     private static final int SERVER_PORT = 22201;
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
+
     List<Player> players = new ArrayList<>();
+
     private Player player;
+
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField chatField;
@@ -41,13 +44,12 @@ public class ClientUI {
 
         frame.add(scrollPane, BorderLayout.EAST);
 
-
         chatField = new JTextField();
         chatField.addActionListener(e -> sendMessage());
         frame.add(chatField, BorderLayout.SOUTH);
 
         new javax.swing.Timer(20, e -> {
-            moveToDestination(8);
+            moveToDestination();
             gamePanel.repaint();
         }).start();
 
@@ -99,12 +101,13 @@ public class ClientUI {
 
             g.setColor(Color.BLACK);
             g.drawString(player.getName(), (int) player.getX() - textWidth / 2, (int) player.getY() + 50);
-
         }
 
     }
 
-    private void moveToDestination(float speed) {
+    private void moveToDestination() {
+        float speed = 8;
+
         for (Player player : players) {
 
             float dx = player.getDestinationX() - player.getX();
@@ -126,8 +129,19 @@ public class ClientUI {
             float moveY = speed * (dy / distance);
             player.setPosition(player.getX() + moveX, player.getY() + moveY);
 
-
         }
+    }
+
+    private Player initializePlayer(String[] rawData) {
+
+        UUID uuid = UUID.fromString(rawData[1]);
+        String name = rawData[2];
+        float positionX = Float.parseFloat(rawData[3]);
+        float positionY = Float.parseFloat(rawData[4]);
+        float destinationX = Float.parseFloat(rawData[5]);
+        float destinationY = Float.parseFloat(rawData[6]);
+
+        return new Player(uuid, name, positionX, positionY, destinationX, destinationY);
     }
 
 
@@ -153,20 +167,11 @@ public class ClientUI {
 
                     while ((serverMessage = in.readLine()) != null) {
 
-
                         if (serverMessage.startsWith("player_data")) {
 
                             String[] rawData = serverMessage.split(" ");
 
-                            UUID uuid = UUID.fromString(rawData[1]);
-                            String name = rawData[2];
-                            float positionX = Float.parseFloat(rawData[3]);
-                            float positionY = Float.parseFloat(rawData[4]);
-                            float destinationX = Float.parseFloat(rawData[5]);
-                            float destinationY = Float.parseFloat(rawData[6]);
-
-
-                            Player player = new Player(uuid, name, positionX, positionY, destinationX, destinationY);
+                            Player player = initializePlayer(rawData);
 
                             if (!players.contains(player)) {
                                 players.add(player);
@@ -179,14 +184,8 @@ public class ClientUI {
                         if (serverMessage.startsWith("account_data")) {
                             String[] rawData = serverMessage.split(" ");
 
-                            UUID uuid = UUID.fromString(rawData[1]);
-                            String name = rawData[2];
-                            float positionX = Float.parseFloat(rawData[3]);
-                            float positionY = Float.parseFloat(rawData[4]);
-                            float destinationX = Float.parseFloat(rawData[5]);
-                            float destinationY = Float.parseFloat(rawData[6]);
+                            player = initializePlayer(rawData);
 
-                            player = new Player(uuid, name, positionX, positionY, destinationX, destinationY);
                         }
 
                         if (serverMessage.startsWith("player_move")) {
