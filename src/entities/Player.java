@@ -3,10 +3,10 @@ package entities;
 import java.util.UUID;
 
 public class Player {
-    private final UUID uuid;
-    private final String name;
     float[] position = new float[2];
     float[] destination = new float[2];
+    private UUID uuid;
+    private String name;
 
     public Player(String name, float x, float y) {
         this.uuid = UUID.randomUUID();
@@ -58,6 +58,14 @@ public class Player {
 
     public String getName() {
         return name;
+    }
+
+    public void CloneFrom(Player player) {
+        this.uuid = player.uuid;
+        this.name = player.name;
+
+        this.position = player.position.clone();
+        this.destination = player.destination.clone();
     }
 
     @Override
