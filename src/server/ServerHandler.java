@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static Server.Server.clients;
+import static server.Server.clients;
 
 public class ServerHandler implements Runnable {
 
@@ -27,7 +27,7 @@ public class ServerHandler implements Runnable {
                     disconnectAllPlayers();
                     serverSocket.close();
                 }
-
+                
             }
 
         } catch (Exception e) {
