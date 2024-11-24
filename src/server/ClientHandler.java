@@ -79,7 +79,7 @@ public class ClientHandler implements Runnable {
                     broadcast(message);
 
                 } else {
-                    broadcast(player.getName() + ": " + message);
+                    broadcast("player_message " + player.getName() + ": " + message);
                 }
 
 

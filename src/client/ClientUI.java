@@ -131,6 +131,21 @@ public class ClientUI {
         }
     }
 
+    private void receiveChatMessage(String serverMessage) {
+
+        if (serverMessage.startsWith("player_message")) {
+
+            String finalServerMessage = serverMessage.replace("player_message", "");
+            
+            SwingUtilities.invokeLater(() -> {
+                chatArea.append(finalServerMessage + "\n");
+
+            });
+        }
+
+        System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
+    }
+
     private void sendMessage() {
         String messageText = chatField.getText();
         if (messageText.trim().isEmpty()) return;
@@ -163,14 +178,8 @@ public class ClientUI {
                     while ((serverMessage = in.readLine()) != null) {
 
                         packetHandler.processMessage(serverMessage);
+                        receiveChatMessage(serverMessage);
 
-                        String finalServerMessage = serverMessage;
-
-                        System.out.println("[" + LocalDateTime.now() + "] " + finalServerMessage);
-                        SwingUtilities.invokeLater(() -> {
-                            chatArea.append(finalServerMessage + "\n");
-
-                        });
                     }
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
