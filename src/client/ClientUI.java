@@ -24,7 +24,7 @@ public class ClientUI {
     private final HashMap<UUID, Player> playersMap = new HashMap<>();
     private final HashMap<UUID, ChatMessage> chatMap = new HashMap<>();
 
-    private Player player = new Player(null, 0, 0);
+    private final Player player = new Player(null, 0, 0);
 
     private JFrame frame;
     private JTextField chatField;
@@ -83,6 +83,14 @@ public class ClientUI {
     }
 
     private void drawGame(Graphics g) {
+
+        if (player.getName() == null) {
+            FontMetrics metrics = g.getFontMetrics();
+            int textWidth = metrics.stringWidth("Type a nickname in chat to connect.");
+
+            g.setColor(Color.BLACK);
+            g.drawString("Type a nickname in chat to connect.", (WIDTH / 2) - textWidth / 2, (HEIGHT / 2) - 25);
+        }
 
         for (Player player : playersMap.values()) {
 
@@ -176,6 +184,7 @@ public class ClientUI {
                         System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
 
                     }
+
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
 
@@ -184,7 +193,6 @@ public class ClientUI {
 
                 }
             }).start();
-
 
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
