@@ -20,9 +20,9 @@ public class ClientUI {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
 
-    HashMap<UUID, Player> playersMap = new HashMap<>();
+    private final HashMap<UUID, Player> playersMap = new HashMap<>();
 
-    private Player player;
+    private Player player = new Player(null, 0, 0);
 
     private JFrame frame;
     private JTextArea chatArea;
@@ -131,18 +131,6 @@ public class ClientUI {
         }
     }
 
-    private Player initializePlayer(String[] rawData) {
-
-        UUID uuid = UUID.fromString(rawData[1]);
-        String name = rawData[2];
-        float positionX = Float.parseFloat(rawData[3]);
-        float positionY = Float.parseFloat(rawData[4]);
-        float destinationX = Float.parseFloat(rawData[5]);
-        float destinationY = Float.parseFloat(rawData[6]);
-
-        return new Player(uuid, name, positionX, positionY, destinationX, destinationY);
-    }
-
     private void sendMessage() {
         String messageText = chatField.getText();
         if (messageText.trim().isEmpty()) return;
@@ -152,6 +140,9 @@ public class ClientUI {
     }
 
     public void startClient() {
+
+        PacketProcessor packetHandler = new PacketProcessor(player, playersMap);
+
         try {
             Socket socket = new Socket("localhost", SERVER_PORT);
             System.out.println("✅ Connected to " + socket.getRemoteSocketAddress());
@@ -165,59 +156,22 @@ public class ClientUI {
 
                     while ((serverMessage = in.readLine()) != null) {
 
-                        if (serverMessage.startsWith("player_data")) {
-
-                            String[] rawData = serverMessage.split(" ");
-
-                            Player player = initializePlayer(rawData);
-
-                            playersMap.putIfAbsent(player.getUuid(), player);
-                        }
-
-                        if (serverMessage.startsWith("account_data")) {
-                            String[] rawData = serverMessage.split(" ");
-
-                            player = initializePlayer(rawData);
-
-                        }
-
-                        if (serverMessage.startsWith("player_move")) {
-                            String[] rawData = serverMessage.split(" ");
-
-                            UUID uuid = UUID.fromString(rawData[1]);
-                            float x = Float.parseFloat(rawData[2]);
-                            float y = Float.parseFloat(rawData[3]);
-
-                            playersMap.get(uuid).setDestination(x, y);
-
-                        }
-
-                        if (serverMessage.startsWith("player_disconnect")) {
-                            String[] rawData = serverMessage.split(" ");
-
-                            UUID uuid = UUID.fromString(rawData[1]);
-
-                            playersMap.remove(uuid);
-
-                        }
+                        packetHandler.processMessage(serverMessage);
 
                         String finalServerMessage = serverMessage;
 
                         System.out.println("[" + LocalDateTime.now() + "] " + finalServerMessage);
-
                         SwingUtilities.invokeLater(() -> {
                             chatArea.append(finalServerMessage + "\n");
 
                         });
-
-
                     }
                 } catch (IOException e) {
                     System.out.println("Error: " + e.getMessage());
-                    System.exit(1);
+
                 } finally {
                     System.out.println("❌ You have been disconnected by the server.");
-                    System.exit(1);
+
                 }
             }).start();
 
