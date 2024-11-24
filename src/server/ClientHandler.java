@@ -23,14 +23,13 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
             System.out.println("NEW PLAYER IS TRYING TO CONNECT");
 
 
             String message;
-            while ((message = in.readLine()) != null && player == null) {
+            while (player.getUuid() == null && (message = in.readLine()) != null) {
                 if (message.startsWith("new_player")) {
                     String[] rawData = message.split(" ");
 
