@@ -31,9 +31,11 @@ public class ClientHandler implements Runnable {
 
             String message;
             while ((message = in.readLine()) != null && player == null) {
+                out.println("Enter your nickname: ");
                 if (message.startsWith("new_player")) {
-                    out.println("Enter your nickname: ");
-                    String playerNickname = in.readLine();
+                    String[] rawData = message.split(" ");
+
+                    String playerNickname = rawData[1];
 
                     player = new Player(playerNickname, 0, 0);
 
@@ -43,7 +45,7 @@ public class ClientHandler implements Runnable {
                     broadcast("Player " + player.getName() + " has connected to the server.");
                 }
             }
-            
+
             while ((message = in.readLine()) != null) {
 
                 if (message.startsWith("player_move")) {
