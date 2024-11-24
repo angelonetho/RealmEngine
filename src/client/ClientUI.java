@@ -12,8 +12,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class ClientUI {
@@ -21,7 +20,7 @@ public class ClientUI {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
 
-    List<Player> players = new ArrayList<>();
+    HashMap<UUID, Player> playersMap = new HashMap<>();
 
     private Player player;
 
@@ -91,7 +90,7 @@ public class ClientUI {
 
     private void drawGame(Graphics g) {
 
-        for (Player player : players) {
+        for (Player player : playersMap.values()) {
 
             g.setColor(Color.BLUE);
             g.fillOval((int) player.getX() - 25, (int) player.getY() - 25, 50, 50);
@@ -108,7 +107,7 @@ public class ClientUI {
     private void moveToDestination() {
         float speed = 8;
 
-        for (Player player : players) {
+        for (Player player : playersMap.values()) {
 
             float dx = player.getDestinationX() - player.getX();
             float dy = player.getDestinationY() - player.getY();
@@ -144,7 +143,6 @@ public class ClientUI {
         return new Player(uuid, name, positionX, positionY, destinationX, destinationY);
     }
 
-
     private void sendMessage() {
         String messageText = chatField.getText();
         if (messageText.trim().isEmpty()) return;
@@ -173,12 +171,7 @@ public class ClientUI {
 
                             Player player = initializePlayer(rawData);
 
-                            if (!players.contains(player)) {
-                                players.add(player);
-                            } else {
-                                players.remove(player);
-                                players.add(player);
-                            }
+                            playersMap.putIfAbsent(player.getUuid(), player);
                         }
 
                         if (serverMessage.startsWith("account_data")) {
@@ -195,11 +188,7 @@ public class ClientUI {
                             float x = Float.parseFloat(rawData[2]);
                             float y = Float.parseFloat(rawData[3]);
 
-                            for (Player player : players) {
-                                if (player.getUuid().equals(uuid)) {
-                                    player.setDestination(x, y);
-                                }
-                            }
+                            playersMap.get(uuid).setDestination(x, y);
 
                         }
 
@@ -208,8 +197,7 @@ public class ClientUI {
 
                             UUID uuid = UUID.fromString(rawData[1]);
 
-
-                            players.removeIf(player -> player.getUuid().equals(uuid));
+                            playersMap.remove(uuid);
 
                         }
 
