@@ -93,13 +93,16 @@ public class ClientUI {
 
         for (Player player : playersMap.values()) {
 
+            g.setColor(new Color(0, 0, 0, 100));
+            g.fillOval((int) player.getX() - 24, (int) player.getY() + 12, 48, 24);
+
             g.setColor(Color.BLUE);
-            g.fillOval((int) player.getX() - 25, (int) player.getY() - 25, 50, 50);
+            g.fillOval((int) player.getX() - 24, (int) player.getY() - 24, 48, 48);
 
             if (player.getUuid().equals(this.player.getUuid())) {
 
-                g.setColor(Color.pink);
-                g.drawOval((int) player.getX() - 25, (int) player.getY() - 50, 50, 50);
+                g.setColor(Color.blue);
+                g.drawOval((int) player.getX() - 25, (int) player.getY() + 12, 50, 24);
             }
 
             FontMetrics metrics = g.getFontMetrics();
@@ -121,7 +124,7 @@ public class ClientUI {
                 String content = chatMessage.getContent();
 
                 g.setColor(Color.RED);
-                g.drawString(content, (int) player.getX() - textWidth / 2, (int) player.getY() - 50);
+                g.drawString(content, (int) player.getX() - textWidth / 2, (int) player.getY() - 48);
             }
         }
 
