@@ -14,7 +14,7 @@ import static server.Server.clients;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
-    private Player player;
+    private Player player = null;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -27,61 +27,15 @@ public class ClientHandler implements Runnable {
         ) {
             System.out.println("NEW PLAYER IS TRYING TO CONNECT");
 
-
             String message;
-            while (player.getUuid() == null && (message = in.readLine()) != null) {
-                if (message.startsWith("new_player")) {
-                    String[] rawData = message.split(" ");
-
-                    String playerNickname = rawData[1];
-
-                    player = new Player(playerNickname, 0, 0);
-
-                    clients.put(player, socket);
-                    sendAccountData();
-                    sendRoomData();
-                    broadcast("Player " + player.getName() + " has connected to the server.");
-                }
+            while (player == null && (message = in.readLine()) != null) {
+                handleNewPlayerConnection(message);
             }
 
             while ((message = in.readLine()) != null) {
-
-                if (message.startsWith("player_move")) {
-                    String[] rawData = message.split(" ");
-
-                    UUID uuid = UUID.fromString(rawData[1]);
-                    float x = Float.parseFloat(rawData[2]);
-                    float y = Float.parseFloat(rawData[3]);
-
-                    for (Player player : clients.keySet()) {
-                        if (player.getUuid().equals(uuid)) {
-                            player.setDestination(x, y);
-                        }
-                    }
-
-                    broadcast(message);
-
-                } else if (message.startsWith("player_pos")) {
-                    String[] rawData = message.split(" ");
-
-                    UUID uuid = UUID.fromString(rawData[1]);
-                    float x = Float.parseFloat(rawData[2]);
-                    float y = Float.parseFloat(rawData[3]);
-
-                    for (Player player : clients.keySet()) {
-                        if (player.getUuid().equals(uuid)) {
-                            player.setPosition(x, y);
-                        }
-                    }
-
-                    broadcast(message);
-
-                } else {
-                    broadcast("player_message " + player.getUuid() + " " + message);
-                }
-
-
+                processMessage(message);
             }
+
         } catch (IOException e) {
 
             if (player != null && !socket.isClosed()) {
@@ -89,13 +43,7 @@ public class ClientHandler implements Runnable {
             }
 
         } finally {
-
-            if (player != null) {
-                clients.remove(player);
-                broadcast(player.getName() + " has disconnected from the server.");
-                broadcast("player_disconnect " + player.getUuid());
-            }
-
+            handlePlayerDisconnection();
             try {
                 socket.close();
             } catch (IOException e) {
@@ -140,4 +88,74 @@ public class ClientHandler implements Runnable {
             }
         }
     }
+
+    private void processMessage(String message) {
+        String[] rawData = message.split(" ");
+
+        String packetType = rawData[0];
+
+        switch (packetType.toUpperCase()) {
+
+            case "PLAYER_POS" -> updatePlayerPosition(rawData);
+
+            case "PLAYER_MOVE" -> updatePlayerDestination(rawData);
+
+            default -> broadcast("player_message " + player.getUuid() + " " + message);
+
+        }
+    }
+
+    private void updatePlayerPosition(String[] rawData) {
+
+        UUID uuid = UUID.fromString(rawData[1]);
+        float x = Float.parseFloat(rawData[2]);
+        float y = Float.parseFloat(rawData[3]);
+
+        for (Player player : clients.keySet()) {
+            if (player.getUuid().equals(uuid)) {
+                player.setPosition(x, y);
+            }
+        }
+
+        broadcast("player_pos " + player.getUuid() + " " + x + " " + y);
+    }
+
+    private void updatePlayerDestination(String[] rawData) {
+
+        float x = Float.parseFloat(rawData[2]);
+        float y = Float.parseFloat(rawData[3]);
+
+        for (Player player : clients.keySet()) {
+            if (player.getUuid().equals(this.player.getUuid())) {
+                player.setDestination(x, y);
+            }
+        }
+
+        broadcast("player_move " + player.getUuid() + " " + x + " " + y);
+    }
+
+    private void handlePlayerDisconnection() {
+        if (player != null) {
+            clients.remove(player);
+            broadcast(player.getName() + " has disconnected from the server.");
+            broadcast("player_disconnect " + player.getUuid());
+        }
+    }
+
+    private void handleNewPlayerConnection(String message) {
+        if (!message.startsWith("new_player")) return;
+
+        String[] rawData = message.split(" ");
+
+        String playerNickname = rawData[1];
+
+        player = new Player(playerNickname, 0, 0);
+
+        clients.put(player, socket);
+        sendAccountData();
+        sendRoomData();
+        broadcast("Player " + player.getName() + " has connected to the server.");
+
+    }
+
 }
