@@ -63,7 +63,6 @@ public class ClientUI {
 
                 if (player.getName() != null && networkManager != null) {
                     networkManager.sendMessage("player_move " + player.getUuid() + " " + x + " " + y);
-                    System.out.println("player_move " + player.getUuid() + " " + x + " " + y);
                 }
             }
         });

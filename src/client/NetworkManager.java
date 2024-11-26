@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class NetworkManager {
 
@@ -18,9 +20,15 @@ public class NetworkManager {
 
     public void sendMessage(String message) {
         out.println(message);
+        logMessage(message);
     }
 
     public BufferedReader getInputReader() {
         return in;
+    }
+
+    private void logMessage(String message) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        System.out.println(LocalDateTime.now().format(timeFormatter) + " [Client] " + message);
     }
 }
