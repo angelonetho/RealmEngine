@@ -46,26 +46,7 @@ public class ClientHandler implements Runnable {
 
             while ((message = in.readLine()) != null) {
 
-                processPacket(message);
-
-                if (message.startsWith("player_move")) {
-                    String[] rawData = message.split(" ");
-
-                    UUID uuid = UUID.fromString(rawData[1]);
-                    float x = Float.parseFloat(rawData[2]);
-                    float y = Float.parseFloat(rawData[3]);
-
-                    for (Player player : clients.keySet()) {
-                        if (player.getUuid().equals(uuid)) {
-                            player.setDestination(x, y);
-                        }
-                    }
-
-                    broadcast(message);
-
-                } else {
-                    broadcast("player_message " + player.getUuid() + " " + message);
-                }
+                processMessage(message);
 
 
             }
@@ -128,13 +109,23 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void processPacket(String message) {
+    private void processMessage(String message) {
         String[] rawData = message.split(" ");
 
-        if (message.startsWith("player_pos")) {
-            updatePlayerPosition(rawData);
-        }
+        String packetType = rawData[0];
 
+        switch (packetType.toUpperCase()) {
+
+            case "PLAYER_POS" -> updatePlayerPosition(rawData);
+
+
+            case "PLAYER_MOVE" -> updatePlayerDestination(rawData);
+
+
+            default -> broadcast("player_message " + player.getUuid() + " " + message);
+
+
+        }
     }
 
     private void updatePlayerPosition(String[] rawData) {
@@ -150,6 +141,20 @@ public class ClientHandler implements Runnable {
         }
 
         broadcast("player_pos " + player.getUuid() + " " + x + " " + y);
+    }
+
+    private void updatePlayerDestination(String[] rawData) {
+
+        float x = Float.parseFloat(rawData[2]);
+        float y = Float.parseFloat(rawData[3]);
+
+        for (Player player : clients.keySet()) {
+            if (player.getUuid().equals(this.player.getUuid())) {
+                player.setDestination(x, y);
+            }
+        }
+
+        broadcast("player_move " + player.getUuid() + " " + x + " " + y);
     }
 
 }
