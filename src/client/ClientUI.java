@@ -137,7 +137,10 @@ public class ClientUI {
 
             if (distance <= speed) {
                 player.setPosition(player.getDestinationX(), player.getDestinationY());
-                networkManager.sendMessage("player_pos " + player.getUuid() + " " + player.getX() + " " + player.getY());
+
+                if (player == this.player) {
+                    networkManager.sendMessage("player_pos " + player.getUuid() + " " + player.getX() + " " + player.getY());
+                }
                 continue;
             }
 
