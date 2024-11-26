@@ -45,9 +45,7 @@ public class ClientHandler implements Runnable {
             }
 
             while ((message = in.readLine()) != null) {
-
                 processMessage(message);
-
 
             }
         } catch (IOException e) {
@@ -57,13 +55,7 @@ public class ClientHandler implements Runnable {
             }
 
         } finally {
-
-            if (player != null) {
-                clients.remove(player);
-                broadcast(player.getName() + " has disconnected from the server.");
-                broadcast("player_disconnect " + player.getUuid());
-            }
-
+            handlePlayerDisconnection();
             try {
                 socket.close();
             } catch (IOException e) {
@@ -118,12 +110,9 @@ public class ClientHandler implements Runnable {
 
             case "PLAYER_POS" -> updatePlayerPosition(rawData);
 
-
             case "PLAYER_MOVE" -> updatePlayerDestination(rawData);
 
-
             default -> broadcast("player_message " + player.getUuid() + " " + message);
-
 
         }
     }
@@ -155,6 +144,14 @@ public class ClientHandler implements Runnable {
         }
 
         broadcast("player_move " + player.getUuid() + " " + x + " " + y);
+    }
+
+    private void handlePlayerDisconnection() {
+        if (player != null) {
+            clients.remove(player);
+            broadcast(player.getName() + " has disconnected from the server.");
+            broadcast("player_disconnect " + player.getUuid());
+        }
     }
 
 }
