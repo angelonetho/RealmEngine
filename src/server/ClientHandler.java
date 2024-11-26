@@ -27,27 +27,15 @@ public class ClientHandler implements Runnable {
         ) {
             System.out.println("NEW PLAYER IS TRYING TO CONNECT");
 
-
             String message;
             while (player == null && (message = in.readLine()) != null) {
-                if (message.startsWith("new_player")) {
-                    String[] rawData = message.split(" ");
-
-                    String playerNickname = rawData[1];
-
-                    player = new Player(playerNickname, 0, 0);
-
-                    clients.put(player, socket);
-                    sendAccountData();
-                    sendRoomData();
-                    broadcast("Player " + player.getName() + " has connected to the server.");
-                }
+                handleNewPlayerConnection(message);
             }
 
             while ((message = in.readLine()) != null) {
                 processMessage(message);
-
             }
+
         } catch (IOException e) {
 
             if (player != null && !socket.isClosed()) {
@@ -152,6 +140,22 @@ public class ClientHandler implements Runnable {
             broadcast(player.getName() + " has disconnected from the server.");
             broadcast("player_disconnect " + player.getUuid());
         }
+    }
+
+    private void handleNewPlayerConnection(String message) {
+        if (!message.startsWith("new_player")) return;
+
+        String[] rawData = message.split(" ");
+
+        String playerNickname = rawData[1];
+
+        player = new Player(playerNickname, 0, 0);
+
+        clients.put(player, socket);
+        sendAccountData();
+        sendRoomData();
+        broadcast("Player " + player.getName() + " has connected to the server.");
+
     }
 
 }
