@@ -96,6 +96,12 @@ public class ClientUI {
             g.setColor(Color.BLUE);
             g.fillOval((int) player.getX() - 25, (int) player.getY() - 25, 50, 50);
 
+            if (player.getUuid().equals(this.player.getUuid())) {
+
+                g.setColor(Color.pink);
+                g.drawOval((int) player.getX() - 25, (int) player.getY() - 50, 50, 50);
+            }
+
             FontMetrics metrics = g.getFontMetrics();
             int textWidth = metrics.stringWidth(player.getName());
 
@@ -138,7 +144,7 @@ public class ClientUI {
             if (distance <= speed) {
                 player.setPosition(player.getDestinationX(), player.getDestinationY());
 
-                if (player == this.player) {
+                if (player.getUuid().equals(this.player.getUuid())) {
                     networkManager.sendMessage("player_pos " + player.getUuid() + " " + player.getX() + " " + player.getY());
                 }
                 continue;
