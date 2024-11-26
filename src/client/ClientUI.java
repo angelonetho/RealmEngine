@@ -9,7 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -165,8 +164,6 @@ public class ClientUI {
     }
 
     public void startClient() {
-
-
         PacketProcessor packetHandler = new PacketProcessor(player, playersMap, chatMap);
 
         try {
@@ -175,17 +172,14 @@ public class ClientUI {
 
             networkManager = new NetworkManager(socket);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedReader in = networkManager.getInputReader();
 
             new Thread(() -> {
                 try {
                     String serverMessage;
-
                     while ((serverMessage = in.readLine()) != null) {
-
                         packetHandler.processMessage(serverMessage);
                         System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
-
                     }
 
                 } catch (IOException e) {
