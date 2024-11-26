@@ -92,9 +92,12 @@ public class ClientUI {
         }
 
         for (Player player : playersMap.values()) {
-
             g.setColor(new Color(0, 0, 0, 100));
             g.fillOval((int) player.getX() - 24, (int) player.getY() + 12, 48, 24);
+        }
+
+        for (Player player : playersMap.values()) {
+
 
             g.setColor(Color.BLUE);
             g.fillOval((int) player.getX() - 24, (int) player.getY() - 24, 48, 48);
