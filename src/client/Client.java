@@ -15,10 +15,9 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class Client {
+    public static final int WIDTH = 1024;
+    public static final int HEIGHT = 768;
     private static final int SERVER_PORT = 22201;
-    private static final int WIDTH = 1024;
-    private static final int HEIGHT = 768;
-
     private final HashMap<UUID, Player> playersMap = new HashMap<>();
     private final HashMap<UUID, ChatMessage> chatMap = new HashMap<>();
 
@@ -46,12 +45,13 @@ public class Client {
             gamePanel.repaint();
         }).start();
 
+        GameRenderer renderer = new GameRenderer(playersMap, chatMap, player);
+
         gamePanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                drawGame(g);
-
+                renderer.drawGame(g);
             }
         };
 
@@ -79,58 +79,6 @@ public class Client {
     public static void main(String[] args) {
         Client clientUI = new Client();
         clientUI.startClient();
-    }
-
-    private void drawGame(Graphics g) {
-
-        if (player.getName() == null) {
-            FontMetrics metrics = g.getFontMetrics();
-            int textWidth = metrics.stringWidth("Type a nickname in chat to connect.");
-
-            g.setColor(Color.BLACK);
-            g.drawString("Type a nickname in chat to connect.", (WIDTH / 2) - textWidth / 2, (HEIGHT / 2) - 25);
-        }
-
-        for (Player player : playersMap.values()) {
-            g.setColor(new Color(0, 0, 0, 100));
-            g.fillOval((int) player.getX() - 24, (int) player.getY() + 12, 48, 24);
-        }
-
-        for (Player player : playersMap.values()) {
-
-
-            g.setColor(Color.BLUE);
-            g.fillOval((int) player.getX() - 24, (int) player.getY() - 24, 48, 48);
-
-            if (player.getUuid().equals(this.player.getUuid())) {
-
-                g.setColor(Color.blue);
-                g.drawOval((int) player.getX() - 25, (int) player.getY() + 12, 50, 24);
-            }
-
-            FontMetrics metrics = g.getFontMetrics();
-            int textWidth = metrics.stringWidth(player.getName());
-
-            g.setColor(Color.BLACK);
-            g.drawString(player.getName(), (int) player.getX() - textWidth / 2, (int) player.getY() + 50);
-
-
-            // Chat
-            if (chatMap.containsKey(player.getUuid())) {
-                ChatMessage chatMessage = chatMap.get(player.getUuid());
-
-                if (chatMessage.isExpired()) {
-                    chatMap.remove(player.getUuid());
-                    continue;
-                }
-
-                String content = chatMessage.getContent();
-
-                g.setColor(Color.RED);
-                g.drawString(content, (int) player.getX() - textWidth / 2, (int) player.getY() - 48);
-            }
-        }
-
     }
 
     private void moveToDestination() {
