@@ -9,18 +9,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class ClientUI {
+public class Client {
+    public static final int WIDTH = 1024;
+    public static final int HEIGHT = 768;
     private static final int SERVER_PORT = 22201;
-    private static final int WIDTH = 1024;
-    private static final int HEIGHT = 768;
-
     private final HashMap<UUID, Player> playersMap = new HashMap<>();
     private final HashMap<UUID, ChatMessage> chatMap = new HashMap<>();
 
@@ -29,9 +26,11 @@ public class ClientUI {
     private JFrame frame;
     private JTextField chatField;
     private JPanel gamePanel;
-    private PrintWriter out;
 
-    public ClientUI() {
+    private NetworkManager networkManager;
+
+
+    public Client() {
         frame = new JFrame("Realm Engine Prototype");
         frame.setSize(WIDTH, HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,19 +40,22 @@ public class ClientUI {
         chatField.addActionListener(e -> sendMessage());
         frame.add(chatField, BorderLayout.SOUTH);
 
-        new javax.swing.Timer(20, e -> {
-            moveToDestination();
-            gamePanel.repaint();
-        }).start();
+
+        GameRenderer renderer = new GameRenderer(playersMap, chatMap, player);
+
 
         gamePanel = new JPanel() {
+
+
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                drawGame(g);
 
+
+                renderer.draw(g);
             }
         };
+
 
         gamePanel.addMouseListener(new MouseAdapter() {
             @Override
@@ -61,9 +63,8 @@ public class ClientUI {
                 int x = e.getX();
                 int y = e.getY();
 
-                if (player.getName() != null && out != null) {
-                    out.println("player_move " + player.getUuid() + " " + x + " " + y);
-                    System.out.println("player_move " + player.getUuid() + " " + x + " " + y);
+                if (player.getName() != null && networkManager != null) {
+                    networkManager.sendMessage("player_move " + player.getUuid() + " " + x + " " + y);
                 }
             }
         });
@@ -74,52 +75,17 @@ public class ClientUI {
         gamePanel.setBackground(Color.GREEN);
         frame.add(gamePanel, BorderLayout.CENTER);
 
+        new javax.swing.Timer(20, e -> {
+            moveToDestination();
+            gamePanel.repaint();
+        }).start();
+
         frame.setVisible(true);
     }
 
     public static void main(String[] args) {
-        ClientUI clientUI = new ClientUI();
+        Client clientUI = new Client();
         clientUI.startClient();
-    }
-
-    private void drawGame(Graphics g) {
-
-        if (player.getName() == null) {
-            FontMetrics metrics = g.getFontMetrics();
-            int textWidth = metrics.stringWidth("Type a nickname in chat to connect.");
-
-            g.setColor(Color.BLACK);
-            g.drawString("Type a nickname in chat to connect.", (WIDTH / 2) - textWidth / 2, (HEIGHT / 2) - 25);
-        }
-
-        for (Player player : playersMap.values()) {
-
-            g.setColor(Color.BLUE);
-            g.fillOval((int) player.getX() - 25, (int) player.getY() - 25, 50, 50);
-
-            FontMetrics metrics = g.getFontMetrics();
-            int textWidth = metrics.stringWidth(player.getName());
-
-            g.setColor(Color.BLACK);
-            g.drawString(player.getName(), (int) player.getX() - textWidth / 2, (int) player.getY() + 50);
-
-
-            // Chat
-            if (chatMap.containsKey(player.getUuid())) {
-                ChatMessage chatMessage = chatMap.get(player.getUuid());
-
-                if (chatMessage.isExpired()) {
-                    chatMap.remove(player.getUuid());
-                    continue;
-                }
-
-                String content = chatMessage.getContent();
-
-                g.setColor(Color.RED);
-                g.drawString(content, (int) player.getX() - textWidth / 2, (int) player.getY() - 50);
-            }
-        }
-
     }
 
     private void moveToDestination() {
@@ -138,7 +104,10 @@ public class ClientUI {
 
             if (distance <= speed) {
                 player.setPosition(player.getDestinationX(), player.getDestinationY());
-                out.println("player_pos " + player.getUuid() + " " + player.getX() + " " + player.getY());
+
+                if (player.getUuid().equals(this.player.getUuid())) {
+                    networkManager.sendMessage("player_pos " + player.getUuid() + " " + player.getX() + " " + player.getY());
+                }
                 continue;
             }
 
@@ -154,35 +123,32 @@ public class ClientUI {
         if (messageText.trim().isEmpty()) return;
 
         if (player.getName() == null) {
-            out.println("new_player " + messageText);
+            networkManager.sendMessage("new_player " + messageText);
             chatField.setText("");
             return;
         }
 
-        out.println(messageText);
+        networkManager.sendMessage(messageText);
         chatField.setText("");
     }
 
     public void startClient() {
-
         PacketProcessor packetHandler = new PacketProcessor(player, playersMap, chatMap);
 
         try {
             Socket socket = new Socket("localhost", SERVER_PORT);
             System.out.println("✅ Connected to " + socket.getRemoteSocketAddress());
 
-            out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            networkManager = new NetworkManager(socket);
+
+            BufferedReader in = networkManager.getInputReader();
 
             new Thread(() -> {
                 try {
                     String serverMessage;
-
                     while ((serverMessage = in.readLine()) != null) {
-
                         packetHandler.processMessage(serverMessage);
                         System.out.println("[" + LocalDateTime.now() + "] " + serverMessage);
-
                     }
 
                 } catch (IOException e) {
