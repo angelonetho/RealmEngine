@@ -22,21 +22,19 @@ public class GameRenderer {
     public void draw(Graphics graphics) {
         if (player.getName() == null) {
             drawWelcomeScreen(graphics);
+            return;
         }
-
 
         drawGame(graphics);
         drawChat(graphics);
     }
 
     public void drawWelcomeScreen(Graphics graphics) {
-
         FontMetrics metrics = graphics.getFontMetrics();
         int textWidth = metrics.stringWidth("Type a nickname in chat to connect.");
 
         graphics.setColor(Color.BLACK);
         graphics.drawString("Type a nickname in chat to connect.", (Client.WIDTH / 2) - textWidth / 2, (Client.HEIGHT / 2) - 25);
-
     }
 
     public void drawChat(Graphics graphics) {
