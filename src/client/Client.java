@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class ClientUI {
+public class Client {
     private static final int SERVER_PORT = 22201;
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 768;
@@ -31,7 +31,7 @@ public class ClientUI {
     private NetworkManager networkManager;
 
 
-    public ClientUI() {
+    public Client() {
         frame = new JFrame("Realm Engine Prototype");
         frame.setSize(WIDTH, HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -77,7 +77,7 @@ public class ClientUI {
     }
 
     public static void main(String[] args) {
-        ClientUI clientUI = new ClientUI();
+        Client clientUI = new Client();
         clientUI.startClient();
     }
 
