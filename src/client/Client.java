@@ -40,20 +40,22 @@ public class Client {
         chatField.addActionListener(e -> sendMessage());
         frame.add(chatField, BorderLayout.SOUTH);
 
-        new javax.swing.Timer(20, e -> {
-            moveToDestination();
-            gamePanel.repaint();
-        }).start();
 
         GameRenderer renderer = new GameRenderer(playersMap, chatMap, player);
 
+
         gamePanel = new JPanel() {
+
+
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                renderer.drawGame(g);
+
+
+                renderer.draw(g);
             }
         };
+
 
         gamePanel.addMouseListener(new MouseAdapter() {
             @Override
@@ -72,6 +74,11 @@ public class Client {
 
         gamePanel.setBackground(Color.GREEN);
         frame.add(gamePanel, BorderLayout.CENTER);
+
+        new javax.swing.Timer(20, e -> {
+            moveToDestination();
+            gamePanel.repaint();
+        }).start();
 
         frame.setVisible(true);
     }
