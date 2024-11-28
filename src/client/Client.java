@@ -162,13 +162,14 @@ public class Client {
                     System.out.println("❌ You have been disconnected by the server.");
                     statusLabel.setText("❌ You have been disconnected by the server.");
                     statusLabel.setVisible(true);
-
+                    gamePanel.setVisible(false);
                 }
             }).start();
 
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
             statusLabel.setText("❌ Falha ao conectar-se ao servidor: " + e.getMessage());
+            gamePanel.setVisible(false);
         }
     }
 
