@@ -3,6 +3,8 @@ package client;
 import entities.ChatMessage;
 import entities.Player;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
@@ -59,6 +61,7 @@ public class PacketProcessor {
             }
         }
 
+        logMessage(message);
     }
 
     private Player initializePlayer(String[] rawData) {
@@ -71,6 +74,11 @@ public class PacketProcessor {
         float destinationY = Float.parseFloat(rawData[6]);
 
         return new Player(uuid, name, positionX, positionY, destinationX, destinationY);
+    }
+
+    private void logMessage(String message) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        System.out.println(LocalDateTime.now().format(timeFormatter) + " [Server] " + message);
     }
 
 

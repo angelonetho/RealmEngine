@@ -26,6 +26,8 @@ public class Client {
     private JFrame frame;
     private JTextField chatField;
     private JPanel gamePanel;
+    private GameRenderer renderer;
+    private JLabel statusLabel;
 
     private NetworkManager networkManager;
 
@@ -36,12 +38,16 @@ public class Client {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
+        statusLabel = new JLabel("Conectando ao servidor...");
+        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        frame.add(statusLabel, BorderLayout.NORTH);
+
         chatField = new JTextField();
         chatField.addActionListener(e -> sendMessage());
         frame.add(chatField, BorderLayout.SOUTH);
 
 
-        GameRenderer renderer = new GameRenderer(playersMap, chatMap, player);
+        renderer = new GameRenderer(playersMap, chatMap, player);
 
 
         gamePanel = new JPanel() {
@@ -50,8 +56,6 @@ public class Client {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-
-
                 renderer.draw(g);
             }
         };
@@ -138,9 +142,9 @@ public class Client {
         try {
             Socket socket = new Socket("localhost", SERVER_PORT);
             System.out.println("✅ Connected to " + socket.getRemoteSocketAddress());
+            statusLabel.setVisible(false);
 
             networkManager = new NetworkManager(socket);
-
             BufferedReader in = networkManager.getInputReader();
 
             new Thread(() -> {
@@ -156,12 +160,16 @@ public class Client {
 
                 } finally {
                     System.out.println("❌ You have been disconnected by the server.");
-
+                    statusLabel.setText("❌ You have been disconnected by the server.");
+                    statusLabel.setVisible(true);
+                    gamePanel.setVisible(false);
                 }
             }).start();
 
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
+            statusLabel.setText("❌ Falha ao conectar-se ao servidor: " + e.getMessage());
+            gamePanel.setVisible(false);
         }
     }
 
