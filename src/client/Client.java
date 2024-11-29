@@ -27,7 +27,10 @@ public class Client {
     private JTextField chatField;
     private JPanel gamePanel;
     private GameRenderer renderer;
+
+    private JPanel errorPanel;
     private JLabel statusLabel;
+    private JButton retryButton;
 
     private NetworkManager networkManager;
 
@@ -38,9 +41,21 @@ public class Client {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
+        errorPanel = new JPanel();
+        errorPanel.setLayout(new BoxLayout(errorPanel, BoxLayout.Y_AXIS));
+
         statusLabel = new JLabel("Conectando ao servidor...");
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        frame.add(statusLabel, BorderLayout.NORTH);
+        errorPanel.add(statusLabel);
+
+        retryButton = new JButton("Retry");
+        retryButton.addActionListener(e -> {
+            startClient();
+        });
+        retryButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Centraliza horizontalmente no BoxLayout
+        errorPanel.add(retryButton);
+
+        frame.add(errorPanel, BorderLayout.NORTH);
 
         chatField = new JTextField();
         chatField.addActionListener(e -> sendMessage());
@@ -142,7 +157,8 @@ public class Client {
         try {
             Socket socket = new Socket("localhost", SERVER_PORT);
             System.out.println("✅ Connected to " + socket.getRemoteSocketAddress());
-            statusLabel.setVisible(false);
+            errorPanel.setVisible(false);
+            gamePanel.setVisible(true);
 
             networkManager = new NetworkManager(socket);
             BufferedReader in = networkManager.getInputReader();
@@ -161,7 +177,7 @@ public class Client {
                 } finally {
                     System.out.println("❌ You have been disconnected by the server.");
                     statusLabel.setText("❌ You have been disconnected by the server.");
-                    statusLabel.setVisible(true);
+                    errorPanel.setVisible(true);
                     gamePanel.setVisible(false);
                 }
             }).start();
@@ -169,6 +185,7 @@ public class Client {
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
             statusLabel.setText("❌ Falha ao conectar-se ao servidor: " + e.getMessage());
+            errorPanel.setVisible(true);
             gamePanel.setVisible(false);
         }
     }
